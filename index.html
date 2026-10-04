@@ -261,7 +261,7 @@ function ribbon(off0,off1,y0,y1,mat,vScale,step){
     c.fillStyle='#3d3f44';c.fillRect(0,0,w,h);
     for(let i=0;i<1600;i++){const v=40+Math.random()*50|0;c.fillStyle=`rgb(${v},${v},${v+4})`;c.fillRect(Math.random()*w,Math.random()*h,2,2);}
     c.fillStyle='#e8e8e2';c.fillRect(5,0,4,h);c.fillRect(w-9,0,4,h);
-    c.fillStyle='#e6b822';c.fillRect(w/2-4,0,3,h);c.fillRect(w/2+1,0,3,h);
+    c.fillStyle='#ecece6';c.fillRect(w/2-2,0,4,h*.45);
   },true);
   const road=ribbon(ROAD_W/2,-ROAD_W/2,.03,.03,new THREE.MeshLambertMaterial({map:roadTex}),14);
   road.receiveShadow=true;scene.add(road);
@@ -335,77 +335,167 @@ function ribbon(off0,off1,y0,y1,mat,vScale,step){
 /* =============== クルマ =============== */
 const CARS=[
   {id:'kei',name:'けいトラ',type:'軽トラック／後輪駆動',desc:'田んぼから 峠へ。パワーは ないけど かるくて 荷台が かるいので おしりが すぐ すべる。',
-   drive:'RWD',mass:760,kw:39,vmax:122,wb:1.9,front:.57,cgh:.78,mu:.86,gripR:.9,steer:38,brake:.95,gears:5,red:6800,idle:950,cyl:3,snd:{decay:.0034,rough:.2,comb:2.1,fb:.45,crackle:1.5,lp:900,body:160,drive:1.6,gain:.5},
-   len:3.4,wid:1.47,hei:1.82,wr:.28,track:1.3,roll:.11,shape:'truck',color:'#f3f3f0',stats:[1,5,2,4]},
+   drive:'RWD',mass:760,kw:39,vmax:122,wb:1.9,front:.57,cgh:.78,mu:.86,gripR:.9,steer:38,brake:.95,gears:5,shift:.45,eff:1,red:6800,idle:950,cyl:3,snd:{decay:.0034,rough:.2,comb:2.1,fb:.45,crackle:1.5,lp:900,body:160,drive:1.6,gain:.5},
+   len:3.4,wid:1.47,hei:1.82,wr:.28,tw:.15,rim:'steel',track:1.3,roll:.11,shape:'truck',color:'#f3f3f0',stats:[1,5,2,4]},
   {id:'van',name:'はたらくワゴン',type:'ワンボックス／後輪駆動',desc:'荷物も 人も のせる 仕事のクルマ。おもくて ながいので ドリフトは 大まわり。でも ディーゼルの トルクは なかなか。',
-   drive:'RWD',mass:1950,kw:120,vmax:170,wb:2.57,front:.55,cgh:.9,mu:.88,gripR:.94,steer:33,brake:.85,gears:6,red:4300,idle:750,cyl:4,diesel:1,snd:{decay:.0048,rough:.22,comb:4.6,fb:.5,crackle:0,lp:650,body:95,drive:2.2,gain:.45},
-   len:4.7,wid:1.7,hei:1.98,wr:.33,track:1.48,roll:.09,shape:'van',color:'#dde1e5',stats:[3,1,2,3]},
+   drive:'RWD',mass:1950,kw:120,vmax:170,wb:2.57,front:.55,cgh:.9,mu:.88,gripR:.94,steer:33,brake:.85,gears:6,shift:.5,eff:.92,red:4300,idle:750,cyl:4,diesel:1,snd:{decay:.0048,rough:.22,comb:4.6,fb:.5,crackle:0,lp:650,body:95,drive:2.2,gain:.45},
+   len:4.7,wid:1.7,hei:1.98,wr:.33,tw:.19,rim:'steel',track:1.48,roll:.09,shape:'van',color:'#dde1e5',stats:[3,1,2,3]},
   {id:'86',name:'ハチマル',type:'80年代クーペ／後輪駆動',desc:'むかしの 走り屋の あこがれ。パワーは ほどほど、でも かるくて ドリフトが しやすい。峠の 主役。',
-   drive:'RWD',mass:950,kw:96,vmax:195,wb:2.4,front:.53,cgh:.5,mu:.98,gripR:.88,steer:38,brake:1.0,gears:5,red:7600,idle:900,cyl:4,snd:{decay:.0021,rough:.09,comb:1.5,fb:.55,crackle:7,lp:1900,body:240,drive:2.4,gain:.42},
-   len:4.2,wid:1.63,hei:1.33,wr:.29,track:1.38,roll:.045,shape:'coupe',color:'#f4f4f2',color2:'#141416',stats:[3,4,3,5]},
+   drive:'RWD',mass:950,kw:96,vmax:195,wb:2.4,front:.53,cgh:.5,mu:.98,gripR:.88,steer:38,brake:1.0,gears:5,shift:.3,eff:.84,red:7600,idle:900,cyl:4,snd:{decay:.0021,rough:.09,comb:1.5,fb:.55,crackle:7,lp:1900,body:240,drive:2.4,gain:.42},
+   len:4.2,wid:1.63,hei:1.33,wr:.29,tw:.19,rim:'eight',track:1.38,roll:.045,shape:'coupe',color:'#f4f4f2',color2:'#141416',stats:[3,4,3,5]},
   {id:'z',name:'Zツアラー',type:'スポーツカー／後輪駆動',desc:'大パワーの FRスポーツ。アクセルを ふみすぎると すぐ おしりが でる。うまく つかえば いちばん はやい。',
-   drive:'RWD',mass:1500,kw:250,vmax:250,wb:2.55,front:.53,cgh:.48,mu:1.12,gripR:.93,steer:34,brake:1.15,gears:6,red:7200,idle:800,cyl:6,snd:{decay:.0027,rough:.11,comb:3.1,fb:.55,crackle:5,lp:1350,body:150,drive:2.0,gain:.42},
-   len:4.3,wid:1.82,hei:1.31,wr:.33,track:1.56,roll:.035,shape:'sports',color:'#e2661c',stats:[5,2,5,4]}
+   drive:'RWD',mass:1500,kw:250,vmax:250,wb:2.55,front:.53,cgh:.48,mu:1.12,gripR:.93,steer:34,brake:1.15,gears:6,shift:.25,eff:1.12,red:7200,idle:800,cyl:6,snd:{decay:.0027,rough:.11,comb:3.1,fb:.55,crackle:5,lp:1350,body:150,drive:2.0,gain:.42},
+   len:4.3,wid:1.82,hei:1.31,wr:.33,tw:.24,rim:'five',track:1.56,roll:.035,shape:'sports',color:'#e2661c',stats:[5,2,5,4]}
 ];
 const STAT_LABELS=['パワー','かるさ','グリップ','ドリフト'];
 
-function extrude(pts,width,mat,bevel){
-  const sh=new THREE.Shape();sh.moveTo(pts[0][0],pts[0][1]);for(let i=1;i<pts.length;i++)sh.lineTo(pts[i][0],pts[i][1]);
-  const g=new THREE.ExtrudeGeometry(sh,{depth:width,bevelEnabled:!!bevel,bevelThickness:.05,bevelSize:.05,bevelSegments:2});
-  g.rotateY(-Math.PI/2);g.translate(width/2,0,0);
-  const m=new THREE.Mesh(g,mat);m.castShadow=true;return m;
+/* --- 車のモデル --- */
+let ENV=null;
+(function makeEnv(){
+  const s=new THREE.Scene();
+  const g=new THREE.SphereGeometry(50,32,16),p=g.attributes.position,col=[];
+  const top=new THREE.Color('#3a5a8c'),hz=new THREE.Color('#f3b07a'),gr=new THREE.Color('#3a3a2c');
+  for(let i=0;i<p.count;i++){const y=p.getY(i)/50;const c=y>0?hz.clone().lerp(top,Math.pow(y,.5)):hz.clone().lerp(gr,Math.min(1,-y*5));col.push(c.r,c.g,c.b);}
+  g.setAttribute('color',new THREE.Float32BufferAttribute(col,3));
+  s.add(new THREE.Mesh(g,new THREE.MeshBasicMaterial({vertexColors:true,side:THREE.BackSide})));
+  const sunM=new THREE.Mesh(new THREE.SphereGeometry(4,12,8),new THREE.MeshBasicMaterial({color:new THREE.Color(6,5,4)}));sunM.position.set(-30,14,-22);s.add(sunM);
+  const strip=new THREE.Mesh(new THREE.BoxGeometry(60,3,1),new THREE.MeshBasicMaterial({color:new THREE.Color(2.2,2.1,2)}));strip.position.set(0,24,30);s.add(strip);
+  const pm=new THREE.PMREMGenerator(renderer);ENV=pm.fromScene(s,.03).texture;pm.dispose();
+})();
+const MAT={
+  glass:new THREE.MeshStandardMaterial({color:'#0b1016',metalness:.7,roughness:.05,envMap:ENV,envMapIntensity:1.5}),
+  black:new THREE.MeshStandardMaterial({color:'#18181a',metalness:.1,roughness:.65,envMap:ENV,envMapIntensity:.4}),
+  gloss:new THREE.MeshStandardMaterial({color:'#0e0e10',metalness:.3,roughness:.25,envMap:ENV}),
+  chrome:new THREE.MeshStandardMaterial({color:'#e8e8ea',metalness:1,roughness:.15,envMap:ENV}),
+  tire:new THREE.MeshStandardMaterial({color:'#141414',metalness:0,roughness:.92}),
+  disc:new THREE.MeshStandardMaterial({color:'#5d5f63',metalness:.8,roughness:.45,envMap:ENV}),
+  silver:new THREE.MeshStandardMaterial({color:'#c9ccd2',metalness:.9,roughness:.28,envMap:ENV}),
+  gun:new THREE.MeshStandardMaterial({color:'#3a3530',metalness:.8,roughness:.35,envMap:ENV}),
+  steel:new THREE.MeshStandardMaterial({color:'#d4d6da',metalness:.6,roughness:.4,envMap:ENV}),
+  plate:new THREE.MeshStandardMaterial({color:'#f2f2ea',roughness:.6}),
+  head:new THREE.MeshBasicMaterial({color:'#fff4d6'}),
+  amber:new THREE.MeshBasicMaterial({color:'#ff9a1a'}),
+  lens:new THREE.MeshStandardMaterial({color:'#cfd6de',metalness:.9,roughness:.05,envMap:ENV,transparent:true,opacity:.9})
+};
+const paintMat=c=>new THREE.MeshPhysicalMaterial({color:c,metalness:.3,roughness:.34,clearcoat:1,clearcoatRoughness:.07,envMap:ENV,envMapIntensity:1.1});
+function bodyShape(top,bottomY,arches,wr){
+  const sh=new THREE.Shape();sh.moveTo(top[0][0],top[0][1]);
+  for(let i=1;i<top.length;i++)sh.lineTo(top[i][0],top[i][1]);
+  for(const a of arches.slice().sort((p,q)=>q.x-p.x)){
+    const a0=Math.asin(clamp((bottomY-wr)/a.r,-1,1));
+    sh.lineTo(a.x+a.r*Math.cos(a0),bottomY);sh.absarc(a.x,wr,a.r,a0,Math.PI-a0,false);
+  }
+  sh.lineTo(top[0][0],bottomY);sh.closePath();return sh;
 }
-function boxM(w,h,d,mat,x,y,z){const m=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),mat);m.position.set(x,y,z);m.castShadow=true;return m;}
+function polyShape(pts){const sh=new THREE.Shape();sh.moveTo(pts[0][0],pts[0][1]);for(let i=1;i<pts.length;i++)sh.lineTo(pts[i][0],pts[i][1]);sh.closePath();return sh;}
+function extrudeGeo(sh,width,o){
+  o=o||{};const bevel=o.bevel||0,d=Math.max(.01,width-2*bevel);
+  const g=new THREE.ExtrudeGeometry(sh,{depth:d,bevelEnabled:bevel>0,bevelThickness:bevel,bevelSize:bevel,bevelSegments:3,curveSegments:14});
+  g.rotateY(-Math.PI/2);g.translate(d/2,0,0);
+  if(o.taper){const p=g.attributes.position;let my=-1e9;for(let i=0;i<p.count;i++)my=Math.max(my,p.getY(i));
+    for(let i=0;i<p.count;i++){const y=p.getY(i);if(y>o.from)p.setX(i,p.getX(i)*(1-o.taper*(y-o.from)/(my-o.from)));}}
+  g.computeVertexNormals();return g;
+}
+function mesh(g,m,x,y,z){const o=new THREE.Mesh(g,m);o.position.set(x||0,y||0,z||0);o.castShadow=true;return o;}
+const box=(w,h,d,m,x,y,z)=>mesh(new THREE.BoxGeometry(w,h,d),m,x,y,z);
+function strut(a,b,x,t,m){
+  const dz=b[0]-a[0],dy=b[1]-a[1],L=Math.hypot(dz,dy);
+  const o=mesh(new THREE.BoxGeometry(t,t,L),m,x,(a[1]+b[1])/2,(a[0]+b[0])/2);o.rotation.x=-Math.atan2(dy,dz);return o;
+}
+const both=(f)=>[f(1),f(-1)];
+function makeWheel(spec,right){
+  const g=new THREE.Group(),r=spec.wr,w=spec.tw,ri=r*.68;
+  const prof=[[ri,-w/2],[r-.035,-w/2],[r,-w/2+.04],[r,w/2-.04],[r-.035,w/2],[ri,w/2]].map(([a,b])=>new THREE.Vector2(a,b));
+  const tg=new THREE.LatheGeometry(prof,22);tg.rotateZ(Math.PI/2);g.add(mesh(tg,MAT.tire));
+  const out=w/2-.02,rimR=ri*1.02;
+  const discG=new THREE.CylinderGeometry(rimR*.72,rimR*.72,.03,18);discG.rotateZ(Math.PI/2);g.add(mesh(discG,MAT.disc,-.03));
+  const barrel=new THREE.CylinderGeometry(rimR,rimR,w*.9,20,1,true);barrel.rotateZ(Math.PI/2);g.add(mesh(barrel,MAT.disc));
+  if(spec.rim==='steel'){
+    const d=new THREE.CylinderGeometry(rimR*.98,rimR*.98,.03,20);d.rotateZ(Math.PI/2);g.add(mesh(d,MAT.steel,out-.03));
+    const cap=new THREE.CylinderGeometry(rimR*.55,rimR*.62,.05,20);cap.rotateZ(Math.PI/2);g.add(mesh(cap,MAT.chrome,out));
+    for(let i=0;i<6;i++){const a=i/6*Math.PI*2,h=mesh(new THREE.BoxGeometry(.04,.05,.05),MAT.disc,out-.01,Math.cos(a)*rimR*.78,Math.sin(a)*rimR*.78);g.add(h);}
+  }else{
+    const n=spec.rim==='eight'?8:5,m=spec.rim==='eight'?MAT.gun:MAT.silver;
+    const lip=new THREE.TorusGeometry(rimR*.97,.018,6,26);lip.rotateY(Math.PI/2);g.add(mesh(lip,m,out-.01));
+    const hub=new THREE.CylinderGeometry(rimR*.22,rimR*.26,.06,14);hub.rotateZ(Math.PI/2);g.add(mesh(hub,m,out-.02));
+    for(let i=0;i<n;i++){const a=i/n*Math.PI*2;const sp=mesh(new THREE.BoxGeometry(.035,rimR*.78,n===8?.045:.085),m,out-.03,Math.cos(a)*rimR*.5,Math.sin(a)*rimR*.5);sp.rotation.x=-a+Math.PI/2;g.add(sp);}
+  }
+  if(right)g.scale.x=-1;
+  return g;
+}
 function buildCar(spec,ghost){
   const root=new THREE.Group();root.rotation.order='YXZ';
   const tilt=new THREE.Group();root.add(tilt);
-  const mk=c=>ghost?new THREE.MeshBasicMaterial({color:'#7ab8ff',transparent:true,opacity:.32,depthWrite:false}):new THREE.MeshPhongMaterial({color:c,shininess:70,specular:'#555'});
-  const body=mk(spec.color),body2=mk(spec.color2||'#222'),glass=ghost?body:new THREE.MeshPhongMaterial({color:'#1b2230',shininess:120,specular:'#99a'}),
-        dark=ghost?body:new THREE.MeshLambertMaterial({color:'#1a1a1c'}),chrome=ghost?body:new THREE.MeshPhongMaterial({color:'#c8c8c8',shininess:90});
-  const W=spec.wid,L=spec.len,h=L/2;
-  const head=ghost?body:new THREE.MeshBasicMaterial({color:'#fff6d8'});
-  const tail=ghost?body:new THREE.MeshBasicMaterial({color:'#7a0d10'});
+  const P=paintMat(spec.color),P2=spec.color2?paintMat(spec.color2):MAT.black;
+  const W=spec.wid,wr=spec.wr,ax=spec.wb/2,add=o=>{tilt.add(o);return o;};
+  const tails=[];const tail=(w,h,d,x,y,z)=>{const m=box(w,h,d,new THREE.MeshBasicMaterial({color:'#6a0a0e'}),x,y,z);tails.push(m);return add(m);};
+  const gh=(pts,Wg,taper,from)=>add(mesh(extrudeGeo(polyShape(pts),Wg,{taper,from}),MAT.glass));
+  const halfAt=(Wg,taper,from,top,y)=>Wg/2*(1-taper*clamp((y-from)/(top-from),0,1));
+  const mirror=(z,y)=>both(s=>{add(box(.05,.03,.12,MAT.black,s*(W/2+.03),y-.03,z));add(box(.06,.11,.16,P,s*(W/2+.1),y,z-.02));add(box(.005,.08,.12,MAT.glass,s*(W/2+.13),y,z-.02));});
   if(spec.shape==='truck'){
-    tilt.add(extrude([[.15,.42],[1.62,.42],[1.7,.95],[1.55,1.78],[.15,1.8]],W,body,1));
-    tilt.add(extrude([[.2,1.12],[1.58,1.12],[1.48,1.68],[.2,1.7]],W+.12,glass));
-    tilt.add(boxM(W,.12,1.85,body,0,.7,-.82));
-    tilt.add(boxM(.06,.36,1.85,body,W/2-.03,.94,-.82));tilt.add(boxM(.06,.36,1.85,body,-W/2+.03,.94,-.82));
-    tilt.add(boxM(W,.36,.06,body,0,.94,-1.72));tilt.add(boxM(W,.5,.08,dark,0,1.1,.12));
-    tilt.add(boxM(W*.9,.3,3.2,dark,0,.48,-.1));
-    tilt.add(boxM(W,.18,.12,dark,0,.5,1.72));
+    add(mesh(extrudeGeo(bodyShape([[.12,.34],[.12,1.70],[.18,1.78],[1.30,1.79],[1.42,1.74],[1.62,1.16],[1.68,1.0],[1.70,.55],[1.66,.34]],.34,[{x:ax,r:wr+.07}],wr),W,{bevel:.05,taper:.05,from:1.2}),P));
+    const gw=W+.03;gh([[.15,1.12],[1.61,1.12],[1.41,1.71],[.15,1.73]],gw,.05,1.2);
+    const hx=y=>halfAt(gw,.05,1.2,1.79,y)+.005;
+    both(s=>{add(strut([1.62,1.13],[1.40,1.73],s*hx(1.4),.07,P));add(strut([.82,1.12],[.82,1.73],s*hx(1.4),.07,P));add(strut([.17,1.12],[.17,1.73],s*hx(1.4),.06,P));
+      add(box(.012,.66,.012,MAT.black,s*(W/2+.006),.78,.82));});
+    add(box(W*.97,.06,1.86,P,0,.72,-.84));
+    both(s=>{add(box(.05,.3,1.86,P,s*(W/2-.025),.9,-.84));add(box(.055,.02,1.86,MAT.black,s*(W/2-.025),.78,-.84));});
+    add(box(W,.3,.05,P,0,.9,-1.75));
+    both(s=>add(box(.06,1.15,.06,MAT.black,s*(W/2-.06),1.32,.06)));add(box(W-.06,.06,.06,MAT.black,0,1.88,.06));
+    for(let i=1;i<6;i++)add(box(W-.12,.02,.02,MAT.black,0,.78+i*.19,.05));
+    add(box(W*.85,.26,3.1,MAT.black,0,.44,-.15));
+    add(box(W+.02,.16,.12,MAT.black,0,.42,1.69));both(s=>{add(box(.24,.15,.03,MAT.head,s*(W/2-.22),.66,1.705));add(box(.1,.08,.03,MAT.amber,s*(W/2-.06),.66,1.7));});
+    add(box(.7,.1,.02,MAT.black,0,.86,1.70));
+    both(s=>tail(.16,.12,.05,s*(W/2-.16),.58,-1.79));add(box(W,.08,.06,MAT.black,0,.42,-1.79));
+    add(box(.33,.17,.01,MAT.plate,0,.6,-1.79));mirror(1.45,1.32);
   }else if(spec.shape==='van'){
-    tilt.add(extrude([[-2.35,.38],[2.3,.38],[2.38,.95],[2.25,1.25],[1.82,1.96],[-2.35,1.98]],W,body,1));
-    tilt.add(extrude([[-2.22,1.28],[2.2,1.28],[1.8,1.86],[-2.22,1.88]],W+.12,glass));
-    tilt.add(boxM(W+.02,.16,.1,dark,0,.48,2.36));tilt.add(boxM(W+.02,.16,.1,dark,0,.48,-2.36));
-    tilt.add(boxM(W*.6,.22,.06,chrome,0,.8,2.4));
+    add(mesh(extrudeGeo(bodyShape([[-2.35,.36],[-2.36,1.90],[-2.3,1.97],[1.5,1.99],[1.62,1.95],[2.1,1.3],[2.3,1.12],[2.38,.9],[2.38,.42],[2.32,.36]],.36,[{x:ax,r:wr+.08},{x:-ax,r:wr+.08}],wr),W,{bevel:.06,taper:.06,from:1.25}),P));
+    const gw=W+.03;gh([[-2.31,1.3],[2.09,1.3],[1.62,1.93],[-2.31,1.94]],gw,.06,1.25);
+    const hx=y=>halfAt(gw,.06,1.25,1.99,y)+.005;
+    both(s=>{add(strut([2.09,1.31],[1.62,1.93],s*hx(1.6),.08,P));
+      for(const z of [1.15,-.2,-1.3])add(strut([z,1.3],[z,1.94],s*hx(1.6),.09,P));
+      add(strut([-2.3,1.3],[-2.3,1.94],s*hx(1.6),.07,P));});
+    add(box(.012,.86,.012,MAT.black,W/2+.006,.86,1.12));add(box(.012,.86,.012,MAT.black,W/2+.006,.86,-.2));add(box(.012,.012,1.32,MAT.black,W/2+.006,1.29,.46));
+    add(box(1.05,.22,.04,MAT.gloss,0,.82,2.385));add(box(.9,.03,.02,MAT.chrome,0,.86,2.41));
+    both(s=>{const h=add(box(.34,.15,.04,MAT.head,s*(W/2-.25),1.03,2.335));h.rotation.x=-.5;add(box(.12,.07,.04,MAT.amber,s*(W/2-.05),.98,2.33));});
+    add(box(W+.04,.22,.16,MAT.black,0,.5,2.36));add(box(.33,.17,.01,MAT.plate,0,.52,2.45));
+    both(s=>tail(.1,.48,.05,s*(W/2-.06),1.0,-2.38));add(box(W+.04,.2,.14,MAT.black,0,.48,-2.38));add(box(.33,.17,.01,MAT.plate,0,.75,-2.4));
+    mirror(1.9,1.38);
   }else if(spec.shape==='coupe'){
-    tilt.add(extrude([[-2.1,.3],[2.05,.3],[2.12,.5],[2.05,.66],[.6,.8],[-1.9,.86],[-2.1,.82],[-2.13,.5]],W,body,1));
-    tilt.add(extrude([[-2.13,.28],[2.13,.28],[2.15,.52],[-2.15,.52]],W+.12,body2));
-    tilt.add(extrude([[.62,.78],[0,1.24],[-1.02,1.26],[-1.9,.86],[-1.9,.8]],W-.12,glass));
-    tilt.add(boxM(W-.14,.06,1.02,body,0,1.27,-.5));
+    add(mesh(extrudeGeo(bodyShape([[-2.08,.32],[-2.12,.64],[-2.02,.84],[-1.9,.87],[.55,.86],[1.3,.8],[1.95,.72],[2.1,.6],[2.1,.34]],.3,[{x:ax,r:wr+.08},{x:-ax,r:wr+.08}],wr),W,{bevel:.05,taper:.04,from:.6}),P));
+    const gw=W-.1,T=.22,F=.84,TOP=1.32;gh([[-1.92,.84],[-.98,1.29],[-.05,1.31],[.58,.85]],gw,T,F);
+    const hx=y=>halfAt(gw,T,F,TOP,y)+.01;
+    add(mesh(extrudeGeo(polyShape([[-1.02,1.27],[0,1.29],[.03,1.335],[-1.04,1.315]]),hx(1.31)*2+.02),P));
+    both(s=>{add(strut([.58,.86],[-.03,1.31],s*hx(1.08),.07,P));add(strut([-.5,.87],[-.55,1.3],s*hx(1.08),.08,P));add(strut([-.98,1.3],[-1.88,.88],s*hx(1.08),.13,P));});
+    add(box(W+.04,.2,.26,P2,0,.42,2.0));add(box(W+.04,.2,.24,P2,0,.42,-2.02));
+    add(box(W+.06,.2,2*ax-2*(wr+.1),P2,0,.42,0));
+    both(s=>{add(box(.06,.2,.5,P2,s*(W/2),.42,1.75));add(box(.06,.2,.5,P2,s*(W/2),.42,-1.75));});
+    both(s=>{const l=add(box(.36,.012,.24,MAT.black,s*(W/2-.32),.735,1.8));l.rotation.x=.12;add(box(.16,.07,.03,MAT.amber,s*(W/2-.2),.42,2.14));});
+    add(box(.6,.05,.02,MAT.black,0,.55,2.15));
+    both(s=>tail(.5,.12,.05,s*(W/2-.3),.7,-2.1));add(box(.42,.1,.04,MAT.black,0,.7,-2.1));add(box(.33,.17,.01,MAT.plate,0,.47,-2.15));
+    add(box(W*.78,.035,.2,P,0,.95,-1.92));both(s=>add(box(.04,.08,.06,P,s*W*.3,.9,-1.9)));
+    mirror(.5,1.0);
   }else{
-    tilt.add(extrude([[-2.15,.3],[2.1,.3],[2.18,.47],[2.04,.62],[.35,.78],[-1.55,.84],[-2.15,.8],[-2.18,.5]],W,body,1));
-    tilt.add(extrude([[.35,.77],[-.25,1.22],[-.85,1.25],[-2.0,.86],[-1.6,.8]],W-.16,glass));
-    tilt.add(extrude([[-2.18,.28],[2.18,.28],[2.2,.38],[-2.2,.38]],W+.12,dark));
+    add(mesh(extrudeGeo(bodyShape([[-2.1,.33],[-2.16,.62],[-2.05,.84],[-1.62,.88],[-.4,.86],[.32,.8],[1.2,.74],[1.92,.64],[2.14,.5],[2.12,.34]],.3,[{x:ax,r:wr+.08},{x:-ax,r:wr+.08}],wr),W,{bevel:.06,taper:.05,from:.55}),P));
+    const gw=W-.18,T=.3,F=.82,TOP=1.31;gh([[-1.66,.84],[-.66,1.29],[-.25,1.31],[.36,.82]],gw,T,F);
+    const hx=y=>halfAt(gw,T,F,TOP,y)+.01;
+    add(mesh(extrudeGeo(polyShape([[-.7,1.27],[-.24,1.29],[-.2,1.325],[-.72,1.305]]),hx(1.3)*2+.02),P));
+    both(s=>{add(strut([.36,.83],[-.23,1.3],s*hx(1.06),.07,P));add(strut([-.66,1.29],[-1.62,.88],s*hx(1.0),.18,P));add(strut([-.45,.86],[-.75,1.24],s*hx(1.05),.1,P));});
+    add(box(1.0,.2,.06,MAT.gloss,0,.42,2.13));add(box(W+.04,.08,.3,MAT.black,0,.3,2.0));
+    both(s=>{const h=add(box(.42,.09,.32,MAT.head,s*(W/2-.36),.63,1.92));h.rotation.y=s*.35;h.rotation.x=-.35;});
+    both(s=>{const t=tail(.42,.09,.06,s*(W/2-.3),.74,-2.12);t.rotation.z=s*-.25;});
+    add(box(W*.7,.14,.12,MAT.black,0,.33,-2.1));both(s=>{const e=new THREE.CylinderGeometry(.05,.05,.14,12);e.rotateX(Math.PI/2);add(mesh(e,MAT.chrome,s*.38,.34,-2.18));});
+    add(box(.33,.17,.01,MAT.plate,0,.55,-2.19));
+    mirror(.28,.95);
   }
-  if(!ghost){
-    for(const s of [1,-1]){
-      tilt.add(boxM(.32,.12,.06,head,s*(W/2-.28),spec.shape==='van'?.95:spec.shape==='truck'?.8:.6,h+.01));
-      const tl=boxM(.3,.12,.06,tail,s*(W/2-.25),spec.shape==='van'?.9:spec.shape==='truck'?.75:.66,-h-.01);tilt.add(tl);root.userData.tails=(root.userData.tails||[]).concat(tl);
-    }
-  }
-  // タイヤ
-  const tireG=new THREE.CylinderGeometry(spec.wr,spec.wr,.22,16);tireG.rotateZ(Math.PI/2);
-  const rimG=new THREE.CylinderGeometry(spec.wr*.62,spec.wr*.62,.23,10);rimG.rotateZ(Math.PI/2);
-  const tireM=ghost?body:new THREE.MeshLambertMaterial({color:'#151515'}),rimM=ghost?body:new THREE.MeshPhongMaterial({color:'#b8bcc4',shininess:80});
+  root.userData.tails=tails;
   root.userData.wheels=[];
   for(const [sx,sz] of [[1,1],[-1,1],[1,-1],[-1,-1]]){
-    const steerG=new THREE.Group();steerG.position.set(sx*spec.track/2,spec.wr,sz*spec.wb/2);
-    const spin=new THREE.Group();spin.add(new THREE.Mesh(tireG,tireM));const rim=new THREE.Mesh(rimG,rimM);spin.add(rim);
-    const spoke=new THREE.Mesh(new THREE.BoxGeometry(.24,spec.wr*1.1,.08),tireM);spin.add(spoke);
-    spin.children[0].castShadow=true;steerG.add(spin);root.add(steerG);root.userData.wheels.push({steerG,spin,front:sz>0});
+    const steerG=new THREE.Group();steerG.position.set(sx*spec.track/2,wr,sz*ax);
+    const spin=makeWheel(spec,sx<0);steerG.add(spin);root.add(steerG);root.userData.wheels.push({steerG,spin,front:sz>0});
   }
   root.userData.tilt=tilt;
+  if(ghost){const gm=new THREE.MeshBasicMaterial({color:'#7ab8ff',transparent:true,opacity:.3,depthWrite:false});root.traverse(o=>{if(o.isMesh){o.material=gm;o.castShadow=false;}});root.userData.tails=[];}
   return root;
 }
 
@@ -413,7 +503,7 @@ function buildCar(spec,ghost){
 function makeCarState(spec){
   const c={spec,x:0,z:0,y:0,yaw:0,vx:0,vz:0,r:0,steer:0,idx:START_I,ax:0,ay:0,rpm:spec.idle,gear:1,spinAng:0,
     slipR:0,slipF:0,beta:0,wheelspin:0,onGravel:false,hit:0,rev:false,revT:0,pitch:0,roll:0};
-  c.cd=(spec.kw*1000)/Math.pow(spec.vmax/3.6,3);
+  c.cd=(spec.kw*1000*.86*spec.eff)/Math.pow(spec.vmax/3.6,3);
   c.I=spec.mass*(spec.wb*spec.wb)*.28;
   return c;
 }
@@ -454,7 +544,7 @@ function stepCar(c,inp,dt,assist){
   // 荷重移動
   const tr=m*c.ax*S.cgh/L*.8;
   const Nf=Math.max(m*G*.15,m*G*S.front-tr),Nr=Math.max(m*G*.15,m*G*(1-S.front)+tr);
-  const ground=trackLocate(c);
+  const ground=c.free?{lat:0,y:0,h:c.yaw,sx:Math.cos(c.yaw),sz:-Math.sin(c.yaw),grade:0}:trackLocate(c);
   c.onGravel=Math.abs(ground.lat)>ROAD_W/2+.1;
   const mu=S.mu*(c.onGravel?.62:1);
   const limF=mu*Nf,limR=mu*Nr*S.gripR;
@@ -462,7 +552,7 @@ function stepCar(c,inp,dt,assist){
   const gr=S.gears===6?GEARS6:GEARS5,vmax=S.vmax/3.6;
   if(!c.rev){
     const top=gr[c.gear-1]*vmax;
-    if(Math.abs(vL)>top*.97&&c.gear<S.gears)c.gear++;
+    if(Math.abs(vL)>top*.97&&c.gear<S.gears){c.gear++;c.shiftT=S.shift;}
     else if(c.gear>1&&Math.abs(vL)<gr[c.gear-2]*vmax*.62)c.gear--;
   }else c.gear=1;
   const gTop=gr[c.gear-1]*vmax;
@@ -470,9 +560,11 @@ function stepCar(c,inp,dt,assist){
   if(c.wheelspin>.5||throttle>0&&spd<2)rpmT=Math.max(rpmT,S.idle+(S.red-S.idle)*(.45+.5*throttle));
   c.rpm=lerp(c.rpm,rpmT,clamp(dt*12,0,1));
   const rn=(c.rpm-S.idle)/(S.red-S.idle);
-  const pf=S.diesel?(.85+.3*Math.sin(Math.PI*clamp(rn,0,1))):(.55+.5*rn);
+  const pf=S.diesel?(.42+.58*Math.sin(Math.PI/2*Math.min(1,clamp(rn,0,1)/.72))):(.22+.78*Math.sin(Math.PI/2*Math.min(1,clamp(rn,0,1)/.9)));
+  if(c.shiftT>0)c.shiftT-=dt;
   // 駆動力
-  let Fdrive=throttle*Math.min(S.kw*1000*pf/Math.max(Math.abs(vL),3),m*G*1.4)*dir;
+  const gearFmax=S.kw*1000/(gTop*.62);
+  let Fdrive=throttle*Math.min(S.kw*1000*pf*.86*S.eff/Math.max(Math.abs(vL),1),gearFmax)*dir*(c.shiftT>0?.08:1);
   if(c.rev&&vL<-6)Fdrive=0;
   if(!throttle)Fdrive=-Math.sign(vL)*m*G*.025*(Math.abs(vL)>.5?1:0);
   else if(assist&&Math.abs(Fdrive)>limR*.97)Fdrive=Math.sign(Fdrive)*limR*.97;
@@ -519,6 +611,7 @@ function stepCar(c,inp,dt,assist){
   c.yaw+=c.r*dt;
   c.x+=c.vx*dt;c.z+=c.vz*dt;
   // 壁
+  if(c.free){c.delta=delta;c.spinAng+=vL/S.wr*dt;c.lat=0;c.grade=0;return;}
   const g2=trackLocate(c);
   const lim=RAIL-S.wid/2-.15;c.hit=0;
   if(Math.abs(g2.lat)>lim){
@@ -575,8 +668,8 @@ let smokeI=0;
 function puff(x,y,z,vx,vz,amt){
   const p=smokes[smokeI++%smokes.length];p.life=1;p.s.visible=true;p.s.position.set(x,y+.3,z);p.vx=vx*.25+(Math.random()-.5);p.vz=vz*.25+(Math.random()-.5);p.vy=.6+Math.random()*.6;p.amt=amt;p.s.scale.setScalar(1);
 }
-function updateSmoke(dt){for(const p of smokes){if(p.life<=0)continue;p.life-=dt*.7;if(p.life<=0){p.s.visible=false;continue;}
-  p.s.position.x+=p.vx*dt;p.s.position.y+=p.vy*dt;p.s.position.z+=p.vz*dt;p.s.scale.setScalar(1+(1-p.life)*5);p.s.material.opacity=p.life*.55*p.amt;}}
+function updateSmoke(dt){for(const p of smokes){if(p.life<=0)continue;p.life-=dt*1.1;if(p.life<=0){p.s.visible=false;continue;}
+  p.s.position.x+=p.vx*dt;p.s.position.y+=p.vy*dt;p.s.position.z+=p.vz*dt;p.s.scale.setScalar(.8+(1-p.life)*2.6);p.s.material.opacity=p.life*p.life*.28*p.amt;}}
 function clearSmoke(){for(const p of smokes){p.life=0;p.s.visible=false;}}
 
 /* =============== おと =============== */
@@ -740,7 +833,7 @@ function syncMesh(c,mesh,dt){
   c.pitch=lerp(c.pitch,clamp(-lonA/G,-1,1)*c.spec.roll*.6,clamp(dt*6,0,1));
   tilt.rotation.set(c.pitch,0,c.roll);
   for(const w of mesh.userData.wheels){if(w.front)w.steerG.rotation.y=c.delta||0;w.spin.rotation.x=c.spinAng;}
-  if(mesh.userData.tails)for(const t of mesh.userData.tails)t.material.color.set(c.braking?'#ff2a2a':'#7a0d10');
+  if(mesh.userData.tails)for(const t of mesh.userData.tails)t.material.color.set(c.braking?'#ff2a2a':'#6a0a0e');
   void fx;void fz;void sx;void sz;
 }
 function resetRace(){
@@ -909,7 +1002,7 @@ function wheelFx(c,dt){
   const sliding=(c.slipR>.16&&spd>4)||c.wheelspin>.3||(c.lastInp&&c.lastInp.hand&&spd>3);
   const fx=Math.sin(c.yaw),fz=Math.cos(c.yaw),sx=Math.cos(c.yaw),sz=-Math.sin(c.yaw),b=c.spec.wb/2,tw=c.spec.track/2;
   for(let w=0;w<2;w++){const s=w?1:-1,x=c.x-fx*b+sx*s*tw,z=c.z-fz*b+sz*s*tw;addSkid(w,x,c.y,z,sliding&&!c.onGravel);
-    if(sliding&&Math.random()<dt*(c.onGravel?40:28)*Math.min(1,c.slipR*2+c.wheelspin))puff(x,c.y,z,c.vx,c.vz,c.onGravel?.5:1);}
+    if(sliding&&Math.random()<dt*(c.onGravel?12:8)*Math.min(1,c.slipR*2+c.wheelspin))puff(x,c.y,z,c.vx,c.vz,c.onGravel?.45:.8);}
   return sliding?Math.min(1,(c.slipR-.1)*2.2+c.wheelspin*.6):0;
 }
 function update(dt){
@@ -967,6 +1060,9 @@ function update(dt){
   }
 }
 window.TA={ENGINE_WORKLET,get state(){return state;},get player(){return player;},CARS,N,START_I,FIN_I,TX,TZ,TY,TH,makeCarState,placeAt,stepCar,aiInput,trackLocate,keys,touchIn,
+  accel(i){const c=makeCarState(CARS[i]);c.free=true;c.x=c.z=c.yaw=0;let t=0,t60=null,t100=null,q=null;const inp={steer:0,throttle:1,brake:0,hand:false};
+    while(t<70){stepCar(c,inp,STEP,true);t+=STEP;const v=c.vz*3.6;if(t60==null&&v>=60)t60=t;if(t100==null&&v>=100)t100=t;if(q==null&&c.z>=402)q=t;}
+    return {name:CARS[i].name,'0-60':t60&&+t60.toFixed(1),'0-100':t100&&+t100.toFixed(1),'400m':q&&+q.toFixed(1),top:Math.round(c.vz*3.6)};},
   run(sec){const n=Math.round(sec*120);for(let i=0;i<n;i++){if(state!=='pause')physics(STEP);if(i%2===0)update(STEP*2);}renderer.render(scene,camera);},
   sim(specIdx,assist,maxT){const c=makeCarState(CARS[specIdx]);placeAt(c,START_I);let t=0,hits=0;while(t<(maxT||300)&&c.idx<FIN_I){stepCar(c,aiInput(c,1),STEP,assist);if(c.hit>2)hits++;t+=STEP;}return {t:+t.toFixed(2),done:c.idx>=FIN_I,hits,idx:c.idx};}};
 startDemo();
