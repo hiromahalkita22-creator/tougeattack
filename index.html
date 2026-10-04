@@ -695,6 +695,14 @@ for(const [id,key] of [['tLeft','left'],['tRight','right'],['tGas','gas'],['tBra
   el.addEventListener('pointerup',up);el.addEventListener('pointercancel',up);el.addEventListener('lostpointercapture',up);
 }
 document.addEventListener('contextmenu',e=>e.preventDefault());
+/* iPhoneのダブルタップ・ピンチ拡大を防ぐ */
+(()=>{let lastEnd=0;
+  document.addEventListener('touchend',e=>{const now=Date.now();if(now-lastEnd<=350&&e.target.tagName!=='INPUT')e.preventDefault();lastEnd=now;},{passive:false});
+  for(const ev of ['gesturestart','gesturechange','gestureend'])document.addEventListener(ev,e=>e.preventDefault(),{passive:false});
+  document.addEventListener('touchmove',e=>{if(e.touches.length>1||(e.scale!==undefined&&e.scale!==1))e.preventDefault();},{passive:false});
+  document.addEventListener('dblclick',e=>e.preventDefault(),{passive:false});
+})();
+
 
 /* =============== ゲーム状態 =============== */
 let state='title',prevState=null;
